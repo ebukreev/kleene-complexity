@@ -86,7 +86,7 @@ Section Structures.
     Class BooleanAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {Co : Complement_Op A } {Lo : Leq_Op A} := {
         BA_Monoid :: Monoid;
         BA_SemiLattice :: SemiLattice;
-        dot_comm : forall x y, x*y = y*x;
+        dot_comm : forall x y, x * y = y * x;
         dot_idem : forall x, x * x = x;
         distr_dot_plus : forall x y z, x * (y + z) = (x * y) + (x * z);
         distr_plus_dot : forall x y z, x + (y * z) = (x + y) * (x + z);
