@@ -43,9 +43,9 @@ Section Structures.
     }.
 
     Class PartiallyOrdered {Lo : Leq_Op A} := {
-        leq_refl : forall x, leq x x;
-        leq_antisym : forall x y, leq x y -> leq y x -> x = y;
-        leq_trans : forall x y z, leq x y -> leq y z -> leq x z
+        leq_refl : forall x, x <== x;
+        leq_antisym : forall x y, x <== y -> y <== x -> x = y;
+        leq_trans : forall x y z, x <== y -> y <== z -> x <== z
     }.
 
     Class SemiLattice {SLo : SemiLattice_Ops A} {Lo : Leq_Op A} := {
@@ -68,22 +68,22 @@ Section Structures.
     Class IdemSemiRing {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {Lo : Leq_Op A} := {
         ISR_LHISR :: LeftHandedIdemSemiRing;
         dot_ann_right: forall x, x * 0 = 0;
-        dot_distr_right: forall x y z, z*(x+y) = z*x + z*y
+        dot_distr_right: forall z x y, z*(x+y) = z*x + z*y
     }.
 
-    Class LeftHandedKleneeAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {So : Star_Op A } {Lo : Leq_Op A} := {
+    Class LeftHandedKleneeAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {So : Star_Op A} {Lo : Leq_Op A} := {
         LHKA_LHISR :: LeftHandedIdemSemiRing;
         star_make_right: forall x, 1 + x*x# = x#;
         star_destruct_left: forall a b, a*b <== b  ->  a#*b <== b;
     }.
 
-    Class KleeneAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {So : Star_Op A } {Lo : Leq_Op A} := {
+    Class KleeneAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {So : Star_Op A} {Lo : Leq_Op A} := {
         KA_LHKA :: LeftHandedKleneeAlgebra;
         star_make_left: forall x, 1 + x#*x = x#;
         star_destruct_right: forall a b, b*a <== b  ->  b*a# <== b
     }.    
 
-    Class BooleanAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {Co : Complement_Op A } {Lo : Leq_Op A} := {
+    Class BooleanAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {Co : Complement_Op A} {Lo : Leq_Op A} := {
         BA_Monoid :: Monoid;
         BA_SemiLattice :: SemiLattice;
         dot_comm : forall x y, x * y = y * x;
