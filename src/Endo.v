@@ -1,6 +1,6 @@
 From klenee_complexity Require Import Algebraic_Structures Domain Conf.
 From Coq Require Import Program.Basics Strings.String.
-From Coq Require Import Sets.Powerset.
+From Coq Require Import Sets.Powerset Sets.Image.
 From Coq Require Import Logic.FunctionalExtensionality.
 
 Definition Endo := Domain -> Domain.
@@ -10,11 +10,50 @@ Axiom endo_monotone : forall (z : Endo) (f g : Domain),
 
 Definition СontinuousEndo := Endo.
 
-Axiom endo_continuous : forall (a : СontinuousEndo) (x y : Domain),
-    a (x + y) = a x + a y.
+Axiom endo_continuous : forall (a : СontinuousEndo) (X : Ensemble Domain),
+    a (domain_lub X) = domain_lub (Im _ _ X a).
 
-Axiom endo_zero_preservation : forall (x : СontinuousEndo),
-    x zero = zero.
+Lemma endo_continuous_binary : forall (a : СontinuousEndo) (x y : Domain),
+    a (x + y) = a x + a y.
+Proof.
+  intros a x y.
+  assert (H : x + y = domain_lub (Union _ (Singleton _ x) (Singleton _ y))).
+  {
+    rewrite domain_lub_union.
+    rewrite domain_lub_singleton.
+    rewrite domain_lub_singleton.
+    reflexivity.
+  }
+  rewrite H.
+  
+  rewrite endo_continuous.
+  
+  assert (Im_eq : Im _ _ (Union _ (Singleton _ x) (Singleton _ y)) a = 
+              Union _ (Singleton _ (a x)) (Singleton _ (a y))).
+  {
+    apply Extensionality_Ensembles.
+    split.
+    - intros z Hz.
+      destruct Hz as [w Hw].
+      destruct Hw as [w Hw|w Hw].
+      + destruct Hw. left. red. rewrite <- H0.  constructor.
+      + destruct Hw. right. red. rewrite <- H0. constructor.
+    - intros z Hz.
+      destruct Hz as [z Hz|z Hz].
+      + destruct Hz. apply Im_intro with x.
+        * left. constructor.
+        * reflexivity.
+      + destruct Hz. apply Im_intro with y.
+        * right. constructor.
+        * reflexivity.
+  }
+  rewrite Im_eq.
+  
+  rewrite domain_lub_union.
+  rewrite domain_lub_singleton.
+  rewrite domain_lub_singleton.
+  reflexivity.
+Qed.
 
 Instance Endo_MonoidOps : Monoid_Ops Endo := {
     one := id;
@@ -340,7 +379,25 @@ Proof.
   { apply functional_extensionality; intro i. reflexivity. }
   
   rewrite H.
-  rewrite endo_continuous.
+  rewrite endo_continuous_binary.
+  reflexivity.
+Qed.
+
+Lemma endo_preserves_zero : forall (a : СontinuousEndo), a zero = zero.
+Proof.
+  intro a.
+  rewrite <- domain_lub_empty.
+  rewrite endo_continuous with (X := Empty_set Domain) by assumption.
+  
+  assert (Im_empty : Im _ _ (Empty_set Domain) a = Empty_set Domain).
+  {
+    apply Extensionality_Ensembles.
+    split.
+    - intros y Hy. inversion Hy. contradiction.
+    - intros y Hy. contradiction.
+  }
+  rewrite Im_empty.
+  rewrite domain_lub_empty.
   reflexivity.
 Qed.
 
@@ -351,7 +408,7 @@ Proof.
   unfold compose.
   apply functional_extensionality.
   intro d.
-  rewrite endo_zero_preservation.
+  rewrite endo_preserves_zero.
   reflexivity.
 Qed.
 

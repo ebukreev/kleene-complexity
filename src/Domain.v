@@ -350,3 +350,9 @@ Instance Domain_BooleanAlgebra : BooleanAlgebra (Mo := Domain_MonoidOps) (SLo :=
     comp_non_contradiction := domain_comp_non_contradiction;
     comp_excluded_middle := domain_comp_excluded_middle
 }.
+
+Parameter domain_lub : Ensemble Domain -> Domain.
+Axiom domain_lub_empty : domain_lub (Empty_set Domain) = zero.
+Axiom domain_lub_singleton : forall x, domain_lub (Singleton Domain x) = x.
+Axiom domain_lub_union : forall A B, 
+  domain_lub (Union Domain A B) = (domain_lub A) + (domain_lub B).
