@@ -36,7 +36,7 @@ Proof.
     - intros z Hz.
       destruct Hz as [w Hw].
       destruct Hw as [w Hw|w Hw].
-      + destruct Hw. left. red. rewrite <- H0.  constructor.
+      + destruct Hw. left. red. rewrite <- H0. constructor.
       + destruct Hw. right. red. rewrite <- H0. constructor.
     - intros z Hz.
       destruct Hz as [z Hz|z Hz].
@@ -78,7 +78,6 @@ Instance Endo_LeqOp : Leq_Op Endo := {
 Lemma endo_leq_refl : forall (a : Endo), a <== a.
 Proof.
   intro a.
-  unfold leq, Endo_LeqOp; simpl.
   apply functional_extensionality.
   intro d.
   apply domain_plus_idem.
@@ -87,18 +86,13 @@ Qed.
 Lemma endo_leq_antisym : forall (x y : Endo), 
     x <== y -> y <== x -> x = y.
 Proof.
-  unfold leq, Endo_LeqOp; simpl.
   intros x y Hxy Hyx.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - intros t Ht.
     apply (f_equal (fun f => f d i)) in Hxy.
-    simpl in Hxy.
-    unfold plus, Endo_SemiLatticeOps in Hxy.
     simpl in Hxy.
     assert (H : In Trace (Union Trace (x d i) (y d i)) t).
     { apply Union_introl; assumption. }
@@ -106,8 +100,6 @@ Proof.
     assumption.
   - intros t Ht.
     apply (f_equal (fun f => f d i)) in Hyx.
-    simpl in Hyx.
-    unfold plus, Endo_SemiLatticeOps in Hyx.
     simpl in Hyx.
     assert (H : In Trace (Union Trace (y d i) (x d i)) t).
     { apply Union_introl; assumption. }
@@ -120,19 +112,13 @@ Lemma endo_leq_trans : forall (x y z : Endo),
 Proof.
   unfold leq, Endo_LeqOp; simpl.
   intros x y z Hxy Hyz.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
-  unfold Same_set.
   split.
   - intros t Ht.
     inversion Ht as [t' H1 | t' H2].
     + pose proof (f_equal (fun f => f d i) Hxy) as Hxy'.
-      simpl in Hxy'.
-      unfold plus, Endo_SemiLatticeOps in Hxy'.
-      simpl in Hxy'.
       assert (Ht_y : In Trace (y d i) t).
       {
         rewrite <- Hxy'.
@@ -140,9 +126,6 @@ Proof.
         assumption.
       }
       pose proof (f_equal (fun f => f d i) Hyz) as Hyz'.
-      simpl in Hyz'.
-      unfold plus, Endo_SemiLatticeOps in Hyz'.
-      simpl in Hyz'.
       rewrite <- Hyz'.
       apply Union_introl.
       assumption.
@@ -171,12 +154,8 @@ Lemma endo_plus_neutral_left : forall (x : Endo),
     0 + x = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, zero, Endo_SemiLatticeOps; simpl.
-  unfold zero, Domain_SemiLatticeOps.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - intros t H. inversion H; [inversion H0 | assumption].
@@ -187,11 +166,8 @@ Lemma endo_plus_idem : forall (x : Endo),
     x + x = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, Endo_SemiLatticeOps; simpl.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - intros t H. inversion H; assumption.
@@ -202,11 +178,8 @@ Lemma endo_plus_assoc : forall (x y z : Endo),
     x + (y + z) = (x + y) + z.
 Proof.
   intros x y z.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, Endo_SemiLatticeOps; simpl.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - intros t H.
@@ -227,11 +200,8 @@ Lemma endo_plus_com : forall (x y : Endo),
     x + y = y + x.
 Proof.
   intros x y.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, Endo_SemiLatticeOps; simpl.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - intros t H.
@@ -252,11 +222,8 @@ Instance Endo_SemiLattice : SemiLattice (SLo := Endo_SemiLatticeOps) (Lo := Endo
 Lemma endo_dot_ann_left : forall (x : Endo), 0 * x = 0.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, zero, Endo_MonoidOps, Endo_SemiLatticeOps; simpl.
+  extensionality d.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - intros t H.
@@ -268,11 +235,6 @@ Qed.
 Lemma endo_dot_distr_left : forall (x y z : Endo), 
     (x + y) * z = x * z + y * z.
 Proof.
-  intros x y z.
-  apply functional_extensionality.
-  intro d.
-  apply functional_extensionality.
-  intro i.
   reflexivity.
 Qed.
 
@@ -282,14 +244,12 @@ Proof.
   intros z x y Hleq.
   apply functional_extensionality.
   intro d.
-  apply functional_extensionality.
-  intro i.
+  extensionality i.
   
   assert (x_d_le_y_d : x d <== y d).
   {
     intro j.
     pose proof (f_equal (fun f => f d j) Hleq) as Heq.
-    simpl in Heq.
     red; intros t Ht.
     rewrite <- Heq.
     apply Union_introl.
@@ -370,8 +330,7 @@ Lemma endo_dot_distr_right : forall (z x y : СontinuousEndo),
     z * (x + y) = z * x + z * y.
 Proof.
   intros z x y.
-  apply functional_extensionality.
-  intro d.
+  extensionality d.
   unfold dot, plus, Endo_MonoidOps, Endo_SemiLatticeOps; simpl.
   unfold compose.
   
@@ -416,30 +375,67 @@ Instance СontinuousEndo_IdemSemiRing : IdemSemiRing (Mo := Endo_MonoidOps) (SLo
     ISR_LHISR := Endo_LeftHandedIdemSemiRing;
     dot_ann_right := endo_dot_ann_right;
     dot_distr_right := endo_dot_distr_right
-}.
+}. 
 
-Fixpoint iter (n : nat) (e : Endo) (d : Domain) : Domain :=
-  match n with
-  | O => d
-  | S n' => let prev := iter n' e d in prev + e prev
-  end.
+Definition Endo_sup (X : Ensemble Endo) : Endo :=
+  fun d i t => exists f, In _ X f /\ In _ (f d i) t.
 
-Instance Endo_StarOp : Star_Op Endo := {
-  star x := fun d s => fun t => exists n, In _ (iter n x d s) t;
-}.
+Definition Endo_inf (X : Ensemble Endo) : Endo :=
+  fun d i t => forall f, In _ X f -> In _ (f d i) t.
 
-Lemma endo_star_destruct_left : forall (a b : Endo),
-    a * b <== b -> a# * b <== b.
+Lemma Endo_sup_is_lub : forall X, LUB X (Endo_sup X).
 Proof.
-Admitted.
-
-Lemma endo_star_make_right : forall (x : Endo),
-  1 + x * x# = x#.
+  intro X.
+  constructor.
+  - intros f Hf_in_X.
+    apply functional_extensionality.
+    intro d.
+    apply leq_plus_def.
+    intros i t Ht.
+    exists f.
+    split; assumption.
+  - intros g H_g_upper_bound.
+    apply functional_extensionality.
+    intro d.
+    apply leq_plus_def.
+    intros i t Ht.
+    destruct Ht as [f [Hf_in_X Ht_in_f]].
+    specialize (H_g_upper_bound f Hf_in_X).
+    apply (f_equal (fun h => h d)) in H_g_upper_bound.
+    apply domain_leq_plus_def in H_g_upper_bound.
+    specialize (H_g_upper_bound i).
+    apply H_g_upper_bound.
+    assumption.
+Qed.
+  
+Lemma Endo_inf_is_glb : forall X, GLB X (Endo_inf X).
 Proof.
-Admitted.
+  intro X.
+  constructor.
+  - intros f Hf_in_X.
+    apply functional_extensionality.
+    intro d.
+    apply leq_plus_def.
+    intros i t Ht.
+    apply Ht.
+    assumption.
+  - intros g H_g_lower_bound.
+    apply functional_extensionality.
+    intro d.
+    apply leq_plus_def.
+    intros i t Ht f Hf_in_X.
+    specialize (H_g_lower_bound f Hf_in_X).
+    apply (f_equal (fun h => h d)) in H_g_lower_bound.
+    apply domain_leq_plus_def in H_g_lower_bound.
+    specialize (H_g_lower_bound i).
+    apply H_g_lower_bound.
+    assumption.
+Qed.
 
-Instance Endo_LeftHandedKleneeAlgebra : LeftHandedKleneeAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
-  LHKA_LHISR := Endo_LeftHandedIdemSemiRing;
-  star_make_right := endo_star_make_right;
-  star_destruct_left := endo_star_destruct_left
+Instance Endo_CompleteLattice : CompleteLattice (Lo := Endo_LeqOp) := {
+  PO_CompleteLattice := Endo_PartiallyOrdered;
+  sup := Endo_sup;
+  sup_is_lub := Endo_sup_is_lub;
+  inf := Endo_inf;
+  inf_is_glb := Endo_inf_is_glb;
 }.
