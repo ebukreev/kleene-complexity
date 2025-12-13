@@ -1,5 +1,5 @@
 From klenee_complexity Require Import Algebraic_Structures Conf.
-From Coq Require Import Strings.String Logic.Classical Sets.Powerset Logic.FunctionalExtensionality.
+From Coq Require Import Strings.String Logic.Classical Sets.Powerset Logic.FunctionalExtensionality Sets.Constructive_sets.
 
 Definition Domain := string -> Ensemble Trace.
 
@@ -12,9 +12,7 @@ Lemma dot_assoc_domain : forall (x y z : Domain),
     x * (y * z) = (x * y) * z.
 Proof.
   intros x y z.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, Domain_MonoidOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   unfold Same_set.
   split; unfold Included; intros t H.
@@ -34,9 +32,7 @@ Lemma dot_neutral_left_domain : forall (x : Domain),
     1 * x = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, one, Domain_MonoidOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   unfold Same_set.
   split; unfold Included; intros t H.
@@ -51,9 +47,7 @@ Lemma dot_neutral_right_domain : forall (x : Domain),
     x * 1 = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, one, Domain_MonoidOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   unfold Same_set.
   split; unfold Included; intros t H.
@@ -81,7 +75,6 @@ Instance Domain_LeqOp : Leq_Op Domain := {
 
 Lemma domain_leq_refl : forall (x : Domain), x <== x.
 Proof.
-  unfold leq, Domain_LeqOp; simpl.
   intros x i.
   red. intros t H. assumption.
 Qed.
@@ -89,10 +82,8 @@ Qed.
 Lemma domain_leq_antisym : forall (x y : Domain), 
     x <== y -> y <== x -> x = y.
 Proof.
-  unfold leq, Domain_LeqOp; simpl.
   intros x y Hxy Hyx.
-  apply functional_extensionality.
-  intro i.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red. intros t H. apply (Hxy i). assumption.
@@ -102,7 +93,6 @@ Qed.
 Lemma domain_leq_trans : forall (x y z : Domain), 
     x <== y -> y <== z -> x <== z.
 Proof.
-  unfold leq, Domain_LeqOp; simpl.
   intros x y z Hxy Hyz i.
   red. intros t H.
   apply (Hyz i).
@@ -122,17 +112,13 @@ Proof.
   intros x y.
   split.
   - intro H.
-    apply functional_extensionality.
-    intro i.
-    unfold plus, Domain_SemiLatticeOps; simpl.
+    extensionality i.
     apply Extensionality_Ensembles.
     split.
     + intros t H1. inversion H1; [apply (H i) | idtac]; assumption.
     + intros t H1. apply Union_intror; assumption.
   - intro H.
-    unfold leq, Domain_LeqOp; simpl.
     intros i t H1.
-    unfold plus, Domain_SemiLatticeOps.
     assert (H2 : plus x y i = y i) by (rewrite H; reflexivity).
     simpl in H2.
     pose proof (Union_introl Trace (x i) (y i) t H1).
@@ -144,9 +130,7 @@ Lemma domain_plus_neutral_left : forall (x : Domain),
     0 + x = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, zero, Domain_SemiLatticeOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H.
@@ -159,9 +143,7 @@ Lemma domain_plus_idem : forall (x : Domain),
     x + x = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, Domain_SemiLatticeOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H.
@@ -174,9 +156,7 @@ Lemma domain_plus_assoc : forall (x y z : Domain),
     x + (y + z) = (x + y) + z.
 Proof.
   intros x y z.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, Domain_SemiLatticeOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H.
@@ -207,9 +187,7 @@ Lemma domain_plus_com : forall (x y : Domain),
     x + y = y + x.
 Proof.
   intros x y.
-  apply functional_extensionality.
-  intro i.
-  unfold plus, Domain_SemiLatticeOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H.
@@ -234,9 +212,7 @@ Instance Domain_ComplementOp : Complement_Op Domain := {
 Lemma domain_dot_comm : forall (x y : Domain), x * y = y * x.
 Proof.
   intros x y.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, Domain_MonoidOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split; red; intros t H;
   inversion H; constructor; assumption.
@@ -245,9 +221,7 @@ Qed.
 Lemma domain_dot_idem : forall (x : Domain), x * x = x.
 Proof.
   intros x.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, Domain_MonoidOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H. inversion H; assumption.
@@ -258,9 +232,7 @@ Lemma domain_distr_dot_plus : forall (x y z : Domain),
     x * (y + z) = (x * y) + (x * z).
 Proof.
   intros x y z.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, plus, Domain_MonoidOps, Domain_SemiLatticeOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H.
@@ -280,9 +252,7 @@ Lemma domain_distr_plus_dot : forall (x y z : Domain),
     x + (y * z) = (x + y) * (x + z).
 Proof.
   intros x y z.
-  apply functional_extensionality.
-  intro i.
-  unfold dot, plus, Domain_MonoidOps, Domain_SemiLatticeOps; simpl.
+  extensionality i.
   apply Extensionality_Ensembles.
   split.
   - red; intros t H.
@@ -308,7 +278,6 @@ Lemma domain_comp_non_contradiction : forall (x : Domain),
     x * !x = 0.
 Proof.
   intros x.
-  unfold dot, comp, zero.
   extensionality i.
   unfold Setminus.
   apply Extensionality_Ensembles.
@@ -325,9 +294,7 @@ Lemma domain_comp_excluded_middle : forall (x : Domain),
     x + !x = 1.
 Proof.
   intros x.
-  unfold plus, comp, one.
   extensionality i.
-  unfold Setminus.
   apply Extensionality_Ensembles.
   split.
   - intros t H.
@@ -351,8 +318,85 @@ Instance Domain_BooleanAlgebra : BooleanAlgebra (Mo := Domain_MonoidOps) (SLo :=
     comp_excluded_middle := domain_comp_excluded_middle
 }.
 
-Parameter domain_lub : Ensemble Domain -> Domain.
-Axiom domain_lub_empty : domain_lub (Empty_set Domain) = zero.
-Axiom domain_lub_singleton : forall x, domain_lub (Singleton Domain x) = x.
-Axiom domain_lub_union : forall A B, 
+Definition domain_lub (X : Ensemble Domain) : Domain :=
+  fun (i : string) (t : Trace) => exists x, In _ X x /\ In _ (x i) t.
+
+Definition domain_glb (X : Ensemble Domain) : Domain :=
+  fun (i : string) (t : Trace) => forall x, In _ X x -> In _ (x i) t.
+
+Lemma Domain_sup_is_lub X : LUB X (domain_lub X).
+Proof.
+  constructor.
+  - intros x Hx i t Ht; exists x; auto.
+  - intros y Hy i t [x [Hx Ht]]; apply (Hy x Hx i); auto.
+Qed.
+
+Lemma Domain_inf_is_glb X : GLB X (domain_glb X).
+Proof.
+  constructor.
+  - intros x Hx i t Ht; apply Ht; auto.
+  - intros y Hy i t Ht x Hx; apply (Hy x Hx i); auto.
+Qed.
+
+Instance Domain_CompleteLattice : CompleteLattice (Lo := Domain_LeqOp) := {
+  PO_CompleteLattice := Domain_PartiallyOrdered;
+  sup := domain_lub;
+  sup_is_lub := Domain_sup_is_lub;
+  inf := domain_glb;
+  inf_is_glb := Domain_inf_is_glb;
+}.
+
+Lemma domain_lub_empty : domain_lub (Empty_set Domain) = zero.
+Proof.
+  extensionality i.
+  apply Extensionality_Ensembles.
+  split.
+  - intros t H. destruct H as [l [l' r]]. contradiction. 
+  - intros t H. contradiction.
+Qed.
+
+Lemma domain_lub_singleton : forall x, domain_lub (Singleton Domain x) = x.
+Proof.
+  intros x.
+  extensionality i.
+  apply Extensionality_Ensembles.
+  split.
+  - intros t H. destruct H as [h [l r]]. apply Singleton_inv in l.
+    rewrite <- l in r.
+    assumption.
+  - intros t H.
+    exists x.
+    split.
+    + reflexivity.
+    + assumption.
+Qed.
+
+Lemma domain_lub_union : forall A B, 
   domain_lub (Union Domain A B) = (domain_lub A) + (domain_lub B).
+Proof.
+  intros A B.
+  extensionality i.
+  apply Extensionality_Ensembles.
+  split.
+  - intros t H. destruct H.
+    destruct H as [H_union H_trace].
+    destruct H_union as [x_in_A | x_in_B].
+    + left.
+      exists x_in_A.
+      split; assumption.
+    + right.
+      exists x_in_B.
+      split; assumption.
+  - red. intros. red in H. red.  
+    destruct H as [x H | x H].
+    + destruct H as [d [H_A H_trace]].
+      exists d.
+      split.
+      ++ left; assumption.
+      ++ assumption.
+    + destruct H as [d [H_B H_trace]].
+      exists d.
+      split.
+    ++ right; assumption.
+    ++ assumption.
+Qed.

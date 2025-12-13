@@ -1,3 +1,5 @@
+From Coq Require Import Sets.Powerset.
+
 Section Ops.
 
     Class Monoid_Ops (A : Type) := {
@@ -94,4 +96,26 @@ Section Structures.
         comp_excluded_middle : forall x, x + !x = 1; 
     }.
 
+    Definition UpperBound {Lo : Leq_Op A} (X : Ensemble A) (u : A) : Prop :=
+        forall x, In _ X x -> x <== u.
+    
+    Definition LowerBound {Lo : Leq_Op A} (X : Ensemble A) (l : A) : Prop :=
+        forall x, In _ X x -> l <== x.
+    
+    Definition LUB {Lo : Leq_Op A} (X : Ensemble A) (lub : A) : Prop :=
+        UpperBound X lub /\ forall u, UpperBound X u -> lub <== u.
+    
+    Definition GLB {Lo : Leq_Op A} (X : Ensemble A) (glb : A) : Prop :=
+        LowerBound X glb /\ forall l, LowerBound X l -> l <== glb.
+    
+    Class CompleteLattice {Lo : Leq_Op A} := {
+        PO_CompleteLattice :: PartiallyOrdered;
+
+        sup : Ensemble A -> A;
+        sup_is_lub : forall X, LUB X (sup X);
+  
+        inf : Ensemble A -> A;
+        inf_is_glb : forall X, GLB X (inf X);
+    }.
+    
 End Structures.
