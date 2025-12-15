@@ -81,6 +81,7 @@ Section Structures.
 
     Class KleeneAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {So : Star_Op A} {Lo : Leq_Op A} := {
         KA_LHKA :: LeftHandedKleneeAlgebra;
+        KA_ISR :: IdemSemiRing;
         star_make_left: forall x, 1 + x#*x = x#;
         star_destruct_right: forall a b, b*a <== b  ->  b*a# <== b
     }.    

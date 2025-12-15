@@ -1,4 +1,4 @@
-From klenee_complexity Require Import Algebraic_Structures Domain Conf.
+From klenee_complexity Require Import Algebraic_Structures Domain Conf LFP NEList.
 From Coq Require Import Program.Basics Strings.String.
 From Coq Require Import Sets.Powerset Sets.Image.
 From Coq Require Import Logic.FunctionalExtensionality.
@@ -438,4 +438,78 @@ Instance Endo_CompleteLattice : CompleteLattice (Lo := Endo_LeqOp) := {
   sup_is_lub := Endo_sup_is_lub;
   inf := Endo_inf;
   inf_is_glb := Endo_inf_is_glb;
+}.
+
+Definition star_operator (a : Endo) : Endo -> Endo :=
+  fun x => 1 + a * x.
+
+Lemma star_operator_monotone (a : Endo) : Monotone (star_operator a).
+Proof.
+  unfold Monotone, star_operator.
+  intros x y Hleq.
+  apply leq_plus_def.
+  rewrite leq_plus_def in Hleq.
+  rewrite plus_assoc. 
+  
+  assert (H_comm: 1 + a * x + 1 = 1 + 1 + a * x).
+  {
+    rewrite plus_com at 1.
+    rewrite plus_assoc.
+    rewrite plus_com.
+    rewrite plus_assoc.
+    rewrite plus_com.
+    rewrite plus_assoc.
+    reflexivity.
+  }
+  rewrite H_comm.
+  
+  rewrite plus_idem.
+  rewrite <- plus_assoc.
+  rewrite <- dot_distr_right.
+  rewrite Hleq.
+  reflexivity.
+Qed.
+
+Instance Endo_StarOp : Star_Op Endo := {
+  star a := lfp (star_operator a) (star_operator_monotone a)
+}.
+
+Lemma Endo_star_fixed_point (a : Endo) :
+  star_operator a (a#) = a#.
+Proof.
+  apply lfp_is_fixed_point.
+Qed.
+
+Lemma endo_star_make_right : forall (x : Endo),
+    1 + x * x# = x#.
+Proof.
+  apply Endo_star_fixed_point.
+Qed.
+
+Lemma endo_star_destruct_left : forall (a b : Endo),
+    a*b <== b -> a#*b <== b.
+Proof.
+Admitted.
+
+Instance Endo_LeftHandedKleneeAlgebra : LeftHandedKleneeAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
+  LHKA_LHISR := Endo_LeftHandedIdemSemiRing;
+  star_make_right := endo_star_make_right;
+  star_destruct_left := endo_star_destruct_left
+}.
+
+Lemma endo_star_make_left : forall (x : СontinuousEndo),
+    1 + x#*x = x#.
+Proof.
+Admitted.
+
+Lemma endo_star_destruct_right : forall (a b : СontinuousEndo),
+    b*a <== b -> b*a# <== b.
+Proof.
+Admitted.
+
+Instance СontinuousEndo_KleeneAlgebra : KleeneAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
+  KA_LHKA := Endo_LeftHandedKleneeAlgebra;
+  KA_ISR := СontinuousEndo_IdemSemiRing;
+  star_make_left := endo_star_make_left;
+  star_destruct_right := endo_star_destruct_right
 }.
