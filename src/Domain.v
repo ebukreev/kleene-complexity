@@ -199,7 +199,7 @@ Qed.
 Lemma domain_plus_monotone_left : forall x y z,
   x <== y -> z + x <== z + y.
 Proof.
-  intros.
+  intros x y z H.
   apply domain_leq_plus_def.
   rewrite domain_leq_plus_def in H.
   rewrite domain_plus_assoc.

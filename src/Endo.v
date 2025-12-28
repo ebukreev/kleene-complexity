@@ -150,11 +150,10 @@ Proof.
   - intro H. exact H.
 Qed.
 
-
 Lemma endo_leq_pointwise_into : forall (a b : Endo),
   (forall (x : Domain), a x <== b x) -> a <== b.
 Proof.
-  intros.
+  intros a b H.
   unfold leq, Endo_LeqOp.
   extensionality d.
   specialize (H d).
@@ -163,16 +162,12 @@ Proof.
 Qed.
 
 Lemma endo_leq_pointwise_elim : forall (a b : Endo),
-  (forall (x : Domain), a <== b -> a x <== b x).
+  forall (x : Domain), a <== b -> a x <== b x.
 Proof.
-  intros.
+  intros a b x H.
   unfold leq, Endo_LeqOp in H.
   apply domain_leq_plus_def.
-  assert (H1 : a x + b x = (a + b) x). {
-    unfold plus at 2.
-    unfold Endo_SemiLatticeOps.
-    reflexivity.
-  }
+  assert (H1 : a x + b x = (a + b) x) by reflexivity. 
   rewrite H1.
   rewrite H.
   reflexivity.
@@ -266,7 +261,7 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma endo_comp_monotone : forall (z : Endo) (x y : Endo),
+Lemma endo_dot_monotone_left : forall (z : Endo) (x y : Endo),
     x <== y -> z * x <== z * y.
 Proof.
   intros z x y Hleq.
@@ -300,9 +295,9 @@ Proof.
     assumption.
 Qed.
 
-Lemma dot_monotone_right : forall x y z, x <== y -> x * z <== y * z.
+Lemma endo_dot_monotone_right : forall x y z, x <== y -> x * z <== y * z.
 Proof.
-  intros.
+  intros x y z H.
   unfold leq, Endo_LeqOp in H.
   unfold leq, Endo_LeqOp.
   rewrite <- endo_dot_distr_left.
@@ -324,7 +319,7 @@ Qed.
 Lemma plus_is_lub_left: forall (a b c : Endo),
   a + b <== c -> a <== c.
 Proof.
-  intros.
+  intros a b c H.
   unfold leq, Endo_LeqOp in H.
   unfold leq, Endo_LeqOp.
   rewrite <- H.
@@ -336,7 +331,7 @@ Qed.
 Lemma plus_is_lub_right: forall (a b c : Endo),
   a + b <== c -> b <== c.
 Proof.
-  intros. 
+  intros a b c H. 
   rewrite plus_com in H.
   apply (plus_is_lub_left b a c H).
 Qed.
@@ -366,10 +361,10 @@ Proof.
   }
   
   assert (Hzx : z * x <== z * (x + y)).
-  { apply endo_comp_monotone. assumption. }
+  { apply endo_dot_monotone_left. assumption. }
   
   assert (Hzy : z * y <== z * (x + y)).
-  { apply endo_comp_monotone. assumption. }
+  { apply endo_dot_monotone_left. assumption. }
 
   apply plus_leq_upper_bound.
   - exact Hzx.
@@ -498,13 +493,13 @@ Instance Endo_CompleteLattice : CompleteLattice (Lo := Endo_LeqOp) := {
   inf_is_glb := Endo_inf_is_glb;
 }.
 
-Definition star_operator (a : Endo) (x : Domain) : Endo :=
-  fun y => x + a y.
+Definition star_operator (a : Endo) (d : Domain) : Endo :=
+  fun (x : Domain) => d + a x.
 
-Lemma star_operator_monotone (a : Endo) (x : Domain) : Monotone (star_operator a x).
+Lemma star_operator_monotone (a : Endo) (d : Domain) : Monotone (star_operator a d).
 Proof.
   unfold Monotone, star_operator.
-  intros y z Hleq.
+  intros x y Hleq.
   apply domain_plus_monotone_left.
   apply endo_monotone.
   assumption.
@@ -514,8 +509,8 @@ Instance Endo_StarOp : Star_Op Endo := {
   star a := fun d => lfp (star_operator a d) (star_operator_monotone a d)
 }.
 
-Lemma Endo_star_fixed_point (a : Endo) (x : Domain) :
-  star_operator a x (a# x) = (a# x).
+Lemma Endo_star_fixed_point (a : Endo) (d : Domain) :
+  star_operator a d (a# d) = (a# d).
 Proof.
   apply lfp_is_fixed_point.
 Qed.
@@ -523,7 +518,7 @@ Qed.
 Lemma endo_star_make_right : forall (x : Endo),
     1 + x * x# = x#.
 Proof.
-  intros.
+  intro x.
   extensionality d.
   apply Endo_star_fixed_point.
 Qed.
@@ -531,14 +526,14 @@ Qed.
 Lemma endo_star_destruct_left : forall (a b : Endo),
     a*b <== b -> a#*b <== b.
 Proof.
-  intros.
+  intros a b H.
   unfold star, Endo_StarOp.
   unfold dot, Endo_MonoidOps, compose.
 
   assert (forall x, star_operator a (b x) (b x) <== (b x)).
   {
+    intro x.
     unfold star_operator.
-    intros.
     apply domain_plus_is_lub.
     apply domain_leq_refl.
     assert (H1 : (a * b) x <== b x). {
@@ -553,12 +548,13 @@ Proof.
   intro x.
   unfold lfp.
   specialize (H0 x).
-  apply (domain_leq_trans (inf (fun x0 : Domain => star_operator a (b x) x0 <== x0)) (star_operator a (b x) (b x)) (b x)).
-  apply inf_is_glb.
-  unfold In.
-  apply endo_monotone.
-  assumption.
-  assumption.
+  apply (domain_leq_trans (inf (fun x0 : Domain => star_operator a (b x) x0 <== x0)) 
+          (star_operator a (b x) (b x)) (b x)).
+  - apply inf_is_glb.
+    unfold In.
+    apply endo_monotone.
+    assumption.
+  - assumption.
 Qed.
 
 Instance Endo_LeftHandedKleneeAlgebra : LeftHandedKleneeAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
