@@ -196,6 +196,34 @@ Proof.
     inversion H; [apply Union_intror | apply Union_introl]; assumption.
 Qed.
 
+Lemma domain_plus_monotone_left : forall x y z,
+  x <== y -> z + x <== z + y.
+Proof.
+  intros.
+  apply domain_leq_plus_def.
+  rewrite domain_leq_plus_def in H.
+  rewrite domain_plus_assoc.
+  rewrite (domain_plus_com (z + x) z).
+  rewrite domain_plus_assoc.
+  rewrite domain_plus_idem.
+  rewrite <- domain_plus_assoc.
+  rewrite H.
+  reflexivity.
+Qed.
+
+Lemma domain_plus_is_lub : forall x y z,
+  x <== z -> y <== z -> x + y <== z.
+Proof.
+  intros x y z H1 H2.
+  apply domain_leq_plus_def.
+  rewrite domain_leq_plus_def in H1.
+  rewrite domain_leq_plus_def in H2.
+  rewrite <- domain_plus_assoc.
+  rewrite H2.
+  rewrite H1.
+  reflexivity.
+Qed.
+
 Instance Domain_SemiLattice : SemiLattice (SLo := Domain_SemiLatticeOps) (Lo := Domain_LeqOp) := {
     PO_SemiLattice := Domain_PartiallyOrdered;
     leq_plus_def := domain_leq_plus_def;
