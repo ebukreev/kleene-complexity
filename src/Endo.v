@@ -150,6 +150,34 @@ Proof.
   - intro H. exact H.
 Qed.
 
+
+Lemma endo_leq_pointwise_into : forall (a b : Endo),
+  (forall (x : Domain), a x <== b x) -> a <== b.
+Proof.
+  intros.
+  unfold leq, Endo_LeqOp.
+  extensionality d.
+  specialize (H d).
+  apply domain_leq_plus_def.
+  assumption.
+Qed.
+
+Lemma endo_leq_pointwise_elim : forall (a b : Endo),
+  (forall (x : Domain), a <== b -> a x <== b x).
+Proof.
+  intros.
+  unfold leq, Endo_LeqOp in H.
+  apply domain_leq_plus_def.
+  assert (H1 : a x + b x = (a + b) x). {
+    unfold plus at 2.
+    unfold Endo_SemiLatticeOps.
+    reflexivity.
+  }
+  rewrite H1.
+  rewrite H.
+  reflexivity.
+Qed.
+
 Lemma endo_plus_neutral_left : forall (x : Endo), 
     0 + x = x.
 Proof.
@@ -272,6 +300,16 @@ Proof.
     assumption.
 Qed.
 
+Lemma dot_monotone_right : forall x y z, x <== y -> x * z <== y * z.
+Proof.
+  intros.
+  unfold leq, Endo_LeqOp in H.
+  unfold leq, Endo_LeqOp.
+  rewrite <- endo_dot_distr_left.
+  rewrite H.
+  reflexivity.
+Qed.
+
 Lemma plus_leq_upper_bound : forall (a b c : Endo),
   a <== c -> b <== c -> a + b <== c.
 Proof.
@@ -281,6 +319,26 @@ Proof.
   rewrite Hb.
   rewrite Ha.
   reflexivity.
+Qed.
+
+Lemma plus_is_lub_left: forall (a b c : Endo),
+  a + b <== c -> a <== c.
+Proof.
+  intros.
+  unfold leq, Endo_LeqOp in H.
+  unfold leq, Endo_LeqOp.
+  rewrite <- H.
+  rewrite 2 plus_assoc.
+  rewrite plus_idem.
+  reflexivity.
+Qed.
+
+Lemma plus_is_lub_right: forall (a b c : Endo),
+  a + b <== c -> b <== c.
+Proof.
+  intros. 
+  rewrite plus_com in H.
+  apply (plus_is_lub_left b a c H).
 Qed.
 
 Lemma endo_dot_distr_leq_right : forall (x y z : Endo),
@@ -440,42 +498,24 @@ Instance Endo_CompleteLattice : CompleteLattice (Lo := Endo_LeqOp) := {
   inf_is_glb := Endo_inf_is_glb;
 }.
 
-Definition star_operator (a : Endo) : Endo -> Endo :=
-  fun x => 1 + a * x.
+Definition star_operator (a : Endo) (x : Domain) : Endo :=
+  fun y => x + a y.
 
-Lemma star_operator_monotone (a : Endo) : Monotone (star_operator a).
+Lemma star_operator_monotone (a : Endo) (x : Domain) : Monotone (star_operator a x).
 Proof.
   unfold Monotone, star_operator.
-  intros x y Hleq.
-  apply leq_plus_def.
-  rewrite leq_plus_def in Hleq.
-  rewrite plus_assoc. 
-  
-  assert (H_comm: 1 + a * x + 1 = 1 + 1 + a * x).
-  {
-    rewrite plus_com at 1.
-    rewrite plus_assoc.
-    rewrite plus_com.
-    rewrite plus_assoc.
-    rewrite plus_com.
-    rewrite plus_assoc.
-    reflexivity.
-  }
-  rewrite H_comm.
-  
-  rewrite plus_idem.
-  rewrite <- plus_assoc.
-  rewrite <- dot_distr_right.
-  rewrite Hleq.
-  reflexivity.
+  intros y z Hleq.
+  apply domain_plus_monotone_left.
+  apply endo_monotone.
+  assumption.
 Qed.
 
 Instance Endo_StarOp : Star_Op Endo := {
-  star a := lfp (star_operator a) (star_operator_monotone a)
+  star a := fun d => lfp (star_operator a d) (star_operator_monotone a d)
 }.
 
-Lemma Endo_star_fixed_point (a : Endo) :
-  star_operator a (a#) = a#.
+Lemma Endo_star_fixed_point (a : Endo) (x : Domain) :
+  star_operator a x (a# x) = (a# x).
 Proof.
   apply lfp_is_fixed_point.
 Qed.
@@ -483,13 +523,43 @@ Qed.
 Lemma endo_star_make_right : forall (x : Endo),
     1 + x * x# = x#.
 Proof.
+  intros.
+  extensionality d.
   apply Endo_star_fixed_point.
 Qed.
 
 Lemma endo_star_destruct_left : forall (a b : Endo),
     a*b <== b -> a#*b <== b.
 Proof.
-Admitted.
+  intros.
+  unfold star, Endo_StarOp.
+  unfold dot, Endo_MonoidOps, compose.
+
+  assert (forall x, star_operator a (b x) (b x) <== (b x)).
+  {
+    unfold star_operator.
+    intros.
+    apply domain_plus_is_lub.
+    apply domain_leq_refl.
+    assert (H1 : (a * b) x <== b x). {
+      apply endo_leq_pointwise_elim.
+      assumption.
+    }
+    unfold dot, Endo_MonoidOps, compose in H1.
+    assumption.
+  }
+
+  apply endo_leq_pointwise_into.
+  intro x.
+  unfold lfp.
+  specialize (H0 x).
+  apply (domain_leq_trans (inf (fun x0 : Domain => star_operator a (b x) x0 <== x0)) (star_operator a (b x) (b x)) (b x)).
+  apply inf_is_glb.
+  unfold In.
+  apply endo_monotone.
+  assumption.
+  assumption.
+Qed.
 
 Instance Endo_LeftHandedKleneeAlgebra : LeftHandedKleneeAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
   LHKA_LHISR := Endo_LeftHandedIdemSemiRing;
