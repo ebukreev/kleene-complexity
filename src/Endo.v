@@ -509,7 +509,7 @@ Instance Endo_StarOp : Star_Op Endo := {
   star a := fun d => lfp (star_operator a d) (star_operator_monotone a d)
 }.
 
-Lemma Endo_star_fixed_point (a : Endo) (d : Domain) :
+Lemma Endo_star_fixed_point_right (a : Endo) (d : Domain) :
   star_operator a d (a# d) = (a# d).
 Proof.
   apply lfp_is_fixed_point.
@@ -520,38 +520,31 @@ Lemma endo_star_make_right : forall (x : Endo),
 Proof.
   intro x.
   extensionality d.
-  apply Endo_star_fixed_point.
+  apply Endo_star_fixed_point_right.
 Qed.
 
 Lemma endo_star_destruct_left : forall (a b : Endo),
     a*b <== b -> a#*b <== b.
 Proof.
   intros a b H.
-  unfold star, Endo_StarOp.
-  unfold dot, Endo_MonoidOps, compose.
 
   assert (forall x, star_operator a (b x) (b x) <== (b x)).
   {
     intro x.
-    unfold star_operator.
     apply domain_plus_is_lub.
     apply domain_leq_refl.
     assert (H1 : (a * b) x <== b x). {
       apply endo_leq_pointwise_elim.
       assumption.
     }
-    unfold dot, Endo_MonoidOps, compose in H1.
     assumption.
   }
 
   apply endo_leq_pointwise_into.
   intro x.
-  unfold lfp.
   specialize (H0 x).
-  apply (domain_leq_trans (inf (fun x0 : Domain => star_operator a (b x) x0 <== x0)) 
-          (star_operator a (b x) (b x)) (b x)).
+  apply (domain_leq_trans ((a # * b) x) (star_operator a (b x) (b x)) (b x)).
   - apply inf_is_glb.
-    unfold In.
     apply endo_monotone.
     assumption.
   - assumption.
@@ -563,15 +556,81 @@ Instance Endo_LeftHandedKleneeAlgebra : LeftHandedKleneeAlgebra (Mo := Endo_Mono
   star_destruct_left := endo_star_destruct_left
 }.
 
-Lemma endo_star_make_left : forall (x : СontinuousEndo),
-    1 + x#*x = x#.
+Lemma Endo_star_fixed_point_left (a : СontinuousEndo) (d : Domain) :
+  star_operator (a#) d (a d) = (a# d).
 Proof.
-Admitted.
+  apply leq_antisym.
 
-Lemma endo_star_destruct_right : forall (a b : СontinuousEndo),
-    b*a <== b -> b*a# <== b.
+  - apply inf_is_glb.
+    intros x H.
+  
+    set (P := fun x : Domain => a d + a x <== x).
+    apply (domain_leq_trans (d + inf P) (d + a x) x).
+    + apply domain_plus_monotone_left.
+      destruct (inf_is_glb P) as [H_lower _].
+      apply H_lower.
+      unfold In.
+      assert (a (d + (a x)) = a d + a (a x)). 
+      {
+        apply endo_continuous_binary.
+      }
+      unfold P.
+      rewrite <- H0.
+      apply endo_monotone.
+      assumption.
+    + assumption.
+
+  - apply inf_is_glb.
+    unfold star_operator.
+    apply endo_monotone.
+
+    set (P := fun x : Domain => a d + a x <== x).
+    intros s t Ht x Hx_P.
+  
+    destruct (inf_is_glb P) as [H_lower _].
+
+    assert (H_sum : d + inf P <== d + x).
+    { apply domain_plus_monotone_left. apply H_lower. exact Hx_P. }
+
+    assert (H_a_mono : a (d + inf P) <== a (d + x)).
+    { apply endo_monotone. exact H_sum. }
+
+    assert (H : forall x, a (d + x) = a d + a x).
+    { intro. apply endo_continuous_binary. }
+
+    rewrite H in H_a_mono.
+
+    assert (H0 : a (d + inf P) <== x).
+    { apply (domain_leq_trans (a (d + inf P)) (a d + a x) x).
+      - rewrite <- H. apply endo_monotone. assumption.
+      - exact Hx_P. }
+
+    specialize (H0 s).
+
+    apply H0.
+    assumption.
+Qed.
+
+Lemma endo_star_make_left : forall (x : СontinuousEndo),
+    1 + x# * x = x#.
 Proof.
-Admitted.
+  intro x.
+  extensionality d.
+  apply Endo_star_fixed_point_left.
+Qed.
+
+Lemma endo_plus_is_lub : forall x y z,
+  x <== z -> y <== z -> x + y <== z.
+Proof.
+  intros x y z H1 H2.
+  apply leq_plus_def.
+  rewrite leq_plus_def in H1.
+  rewrite leq_plus_def in H2.
+  rewrite <- plus_assoc.
+  rewrite H2.
+  rewrite H1.
+  reflexivity.
+Qed.
 
 Instance СontinuousEndo_KleeneAlgebra : KleeneAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
   KA_LHKA := Endo_LeftHandedKleneeAlgebra;
