@@ -632,6 +632,83 @@ Proof.
   reflexivity.
 Qed.
 
+Fixpoint pow (a : Endo) (n : nat) : Endo :=
+  match n with
+    | O => 1
+    | S n' => a * pow a n'
+  end.
+
+Axiom star_sup_pow : forall (a : СontinuousEndo), 
+  a# = sup (Im _ _ (Full_set nat) (pow a)).
+
+Axiom endo_dot_sup_left : forall (b : СontinuousEndo) (X : Ensemble Endo),
+    b * (sup X) = sup (Im _ _ X (fun x => b * x)).
+
+Lemma endo_star_destruct_right : forall (a b : СontinuousEndo),
+    b * a <== b -> b * a# <== b.
+Proof.
+  intros a b Hba.  
+  rewrite star_sup_pow.
+
+  set (P := fun (f : Endo) => b * f <== b).
+  assert (P_sup_chain : forall (g : nat -> Endo),
+      (forall n, P (g n)) -> P (sup (Im nat Endo (Full_set nat) g))).
+  {
+    intros g H.
+    unfold P.
+    rewrite endo_dot_sup_left.
+
+    apply functional_extensionality.
+    intro d.
+    apply leq_plus_def.
+    intros i t Ht.
+    destruct Ht as [h [Hh_in_Im Ht_in_h]].
+    destruct Hh_in_Im as [f Hf_in_Im Hh_eq].
+    destruct Hf_in_Im as [n _ Hf_eq].
+    subst Hf_eq Hh_eq.
+  
+    specialize (H n).
+  
+    assert (H_sub : Included Trace ((b * g n) d i) (b d i)).
+    {
+      intros x Hx.
+      assert (H_union : In Trace ((b * g n + b) d i) x).
+      {
+        apply Union_introl.
+        exact Hx.
+      }
+      assert (Hin: In Trace (b d i) x).
+      {
+        rewrite <- H.
+        exact H_union.
+      }
+      assumption.
+    }
+    
+    apply H_sub.
+    exact Ht_in_h.
+  }
+
+  apply P_sup_chain.
+
+  induction n.
+  - unfold P, pow.
+    rewrite dot_neutral_right. 
+    apply leq_refl.
+  - assert (P_closed : forall f, P f -> P (a * f)).
+    {
+      intros f Hf.
+      unfold P.
+      rewrite dot_assoc.
+      apply (leq_trans ((b * a) * f) (b * f) b).
+      - apply endo_dot_monotone_right. 
+        exact Hba.
+      - exact Hf.
+    }
+    apply P_closed. 
+    assumption.
+Qed.
+    
 Instance СontinuousEndo_KleeneAlgebra : KleeneAlgebra (Mo := Endo_MonoidOps) (SLo := Endo_SemiLatticeOps) (So := Endo_StarOp) (Lo := Endo_LeqOp) := {
   KA_LHKA := Endo_LeftHandedKleneeAlgebra;
   KA_ISR := СontinuousEndo_IdemSemiRing;
