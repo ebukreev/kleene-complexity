@@ -1,5 +1,5 @@
-From klenee_complexity Require Import Algebraic_Structures Domain Conf.
-From Coq Require Import Program.Basics Strings.String.
+From klenee_complexity Require Import Algebraic_Structures Domain TM.
+From Coq Require Import Program.Basics.
 From Coq Require Import Sets.Powerset Sets.Image.
 From Coq Require Import Logic.FunctionalExtensionality.
 
