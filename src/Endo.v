@@ -4,7 +4,7 @@ From Coq Require Import Sets.Powerset Sets.Image.
 From Coq Require Import Logic.FunctionalExtensionality.
 
 Section Endo.
-  Context `{params : TMParams}.
+  Context `{tm : TM}.
 
   Definition Endo := Domain -> Domain.
 

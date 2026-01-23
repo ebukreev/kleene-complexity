@@ -3,5 +3,6 @@
 src/Algebraic_Structures.v
 src/Domain.v
 src/NEList.v
+src/Endo.v
 src/LFP.v
 src/TM.v

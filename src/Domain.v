@@ -2,7 +2,7 @@ From klenee_complexity Require Import Algebraic_Structures TM.
 From Coq Require Import Logic.Classical Sets.Powerset Logic.FunctionalExtensionality Sets.Constructive_sets.
 
 Section Domain.
-  Context `{params : TMParams}.
+  Context `{tm : TM}.
 
   Definition Domain := list Σ -> Ensemble Trace.
 
