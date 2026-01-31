@@ -7,7 +7,6 @@ From Coq Require Import Logic.ProofIrrelevance.
 Section Endo.
   Context `{tm : TM}.
 
-
   Definition Endo := Domain -> Domain.
 
   Global Instance Endo_MonoidOps : Monoid_Ops Endo := {
