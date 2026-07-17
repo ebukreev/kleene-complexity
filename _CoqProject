@@ -7,3 +7,5 @@ src/Image_Facts.v
 src/Domain.v
 src/LFP.v
 src/Endo.v
+src/Terms.v
+src/Complexity_Algebras.v
