@@ -127,6 +127,17 @@ Proof.
   destruct Ht as [t Ht | t Ht]; [apply (H1 i) | apply (H2 i)]; exact Ht.
 Qed.
 
+Lemma domain_leq_plus_left : forall (x y : Domain), x <== x + y.
+Proof.
+  intros x y; apply domain_leq_plus_def.
+  now rewrite domain_plus_assoc, domain_plus_idem.
+Qed.
+
+Lemma domain_leq_plus_right : forall (x y : Domain), y <== x + y.
+Proof.
+  intros x y; rewrite domain_plus_com; apply domain_leq_plus_left.
+Qed.
+
 Instance Domain_SemiLattice : SemiLattice (SLo := Domain_SemiLatticeOps) (Lo := Domain_LeqOp) := {
     PO_SemiLattice := Domain_PartiallyOrdered;
     leq_plus_def := domain_leq_plus_def;

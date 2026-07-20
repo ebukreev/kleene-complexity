@@ -362,8 +362,55 @@ Fixpoint pow (a : Endo) (n : nat) : Endo :=
     | S n' => a * pow a n'
   end.
 
-Axiom star_sup_pow : forall (a : СontinuousEndo),
+Lemma pow_in_powerset : forall (a : Endo) (n : nat) (d : Domain),
+  In _ (Im _ _ (Im _ _ (Full_set nat) (pow a)) (fun f => f d)) ((pow a n) d).
+Proof.
+  intros a n d.
+  exact (Im_intro _ _ (Im _ _ (Full_set nat) (pow a)) (fun f => f d) (pow a n)
+           (Im_intro _ _ (Full_set nat) (pow a) n (Full_intro nat n) (pow a n) eq_refl)
+           ((pow a n) d) eq_refl).
+Qed.
+
+Lemma star_sup_pow : forall (a : СontinuousEndo),
   a# = sup (Im _ _ (Full_set nat) (pow a)).
+Proof.
+  intro a.
+  extensionality d.
+  change (sup (Im _ _ (Full_set nat) (pow a)))
+    with (Endo_sup (Im _ _ (Full_set nat) (pow a))).
+  rewrite Endo_sup_pointwise.
+  set (Pd := Im _ _ (Im _ _ (Full_set nat) (pow a)) (fun f => f d)).
+  apply domain_leq_antisym.
+  - apply inf_is_glb.
+    unfold In, star_operator.
+    apply domain_plus_is_lub.
+    + apply (proj1 (Domain_sup_is_lub Pd)).
+      exact (pow_in_powerset a 0 d).
+    + rewrite endo_continuous.
+      apply (proj2 (Domain_sup_is_lub (Im _ _ Pd a))).
+      intros z Hz.
+      destruct Hz as [y Hy z Hzeq];
+        destruct Hy as [f Hf y Hyeq];
+        destruct Hf as [n Hn f Hfeq]; subst.
+      apply (proj1 (Domain_sup_is_lub Pd)).
+      exact (pow_in_powerset a (S n) d).
+  - apply (proj2 (Domain_sup_is_lub Pd)).
+    intros y Hy.
+    destruct Hy as [f Hf y Hyeq];
+      destruct Hf as [n Hn f Hfeq]; subst.
+    clear Hn.
+    induction n.
+    + change (pow a 0 d) with d.
+      apply (domain_leq_trans d (star_operator a d (a# d)) (a# d)).
+      * unfold star_operator; apply domain_leq_plus_left.
+      * rewrite Endo_star_fixed_point_right; apply domain_leq_refl.
+    + change (pow a (S n) d) with (a (pow a n d)).
+      apply (domain_leq_trans (a (pow a n d)) (a (a# d)) (a# d)).
+      * apply endo_monotone; exact IHn.
+      * apply (domain_leq_trans (a (a# d)) (star_operator a d (a# d)) (a# d)).
+        -- unfold star_operator; apply domain_leq_plus_right.
+        -- rewrite Endo_star_fixed_point_right; apply domain_leq_refl.
+Qed.
 
 Lemma endo_dot_sup_left : forall (b : СontinuousEndo) (X : Ensemble Endo),
     b * (sup X) = sup (Im _ _ X (fun x => b * x)).
