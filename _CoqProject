@@ -5,4 +5,5 @@ src/Conf.v
 src/Domain.v
 src/NEList.v
 src/LFP.v
+src/Image_Facts.v
 src/Endo.v

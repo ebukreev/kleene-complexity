@@ -136,3 +136,16 @@ Proof.
   apply H_lb.
   exact Hx_in_P.
 Qed.
+
+Lemma lfp_leq {A} {Lo : Leq_Op A} {CL : CompleteLattice}
+              (F G : A -> A) (F_mono : Monotone F) (G_mono : Monotone G) :
+        (forall x, F x <== G x) -> lfp F F_mono <== lfp G G_mono.
+Proof.
+  intro Hle.
+  unfold lfp.
+  apply (proj2 (inf_is_glb (fun y => G y <== y))).
+  intros x Hx.
+  apply (proj1 (inf_is_glb (fun y => F y <== y))).
+  red. red in Hx.
+  exact (leq_trans (F x) (G x) x (Hle x) Hx).
+Qed.
