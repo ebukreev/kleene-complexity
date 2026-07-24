@@ -176,6 +176,34 @@ Section Domain.
     destruct (classic (In Trace (x i) t)); auto with sets.
   Qed.
 
+  Lemma domain_comp_involutive : forall (x : Domain), !!x = x.
+  Proof.
+    intros x. extensionality i.
+    apply Extensionality_Ensembles; split; intros t Ht; red in Ht.
+    - destruct Ht as [_ Hnot].
+      destruct (classic (In Trace (x i) t)) as [H | H]; [exact H |].
+      exfalso; apply Hnot; split; [constructor | exact H].
+    - split; [constructor |].
+      intros [_ Hnx]; contradiction.
+  Qed.
+
+  Lemma domain_comp_zero : !(zero : Domain) = (one : Domain).
+  Proof.
+    extensionality i.
+    apply Extensionality_Ensembles; split; intros t Ht.
+    - constructor.
+    - split; [constructor |].
+      intros Hc; red in Hc; destruct Hc.
+  Qed.
+
+  Lemma domain_comp_antitone : forall (x y : Domain), x <== y -> !y <== !x.
+  Proof.
+    intros x y H i t Ht; red in Ht.
+    destruct Ht as [Hfull Hny].
+    split; [exact Hfull |].
+    intros Hx; apply Hny, (H i); exact Hx.
+  Qed.
+
   Global Instance Domain_BooleanAlgebra : BooleanAlgebra (Mo := Domain_MonoidOps) (SLo := Domain_SemiLatticeOps) (Co := Domain_ComplementOp) (Lo := Domain_LeqOp) := {
       BA_Monoid := Domain_Monoid;
       BA_SemiLattice := Domain_SemiLattice;

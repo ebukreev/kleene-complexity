@@ -375,6 +375,65 @@ Section Endo.
     - apply (endo_star_destruct_left (me_fn a) (me_fn b) (me_mono a) H).
   Qed.
 
+  Definition endo_dual (f : Endo) : Endo := fun d => !(f (!d)).
+
+  Lemma endo_dual_monotone : forall (f : Endo),
+      Monotone f -> Monotone (endo_dual f).
+  Proof.
+    intros f Hf x y Hxy; unfold endo_dual.
+    apply domain_comp_antitone, Hf, domain_comp_antitone, Hxy.
+  Qed.
+
+  Definition me_dual (a : MonotoneEndo) : MonotoneEndo :=
+    exist _ (endo_dual (me_fn a)) (endo_dual_monotone (me_fn a) (me_mono a)).
+
+  Global Instance ME_DualOp : Dual_Op MonotoneEndo := { dual := me_dual }.
+
+  Lemma me_eq : forall (a b : MonotoneEndo), me_fn a = me_fn b -> a = b.
+  Proof. intros a b H; apply sig_eq; exact H. Qed.
+
+  Lemma me_fn_dual : forall a, me_fn (a ~) = endo_dual (me_fn a).
+  Proof. reflexivity. Qed.
+  Lemma me_fn_dot : forall a b, me_fn (a * b) = compose (me_fn a) (me_fn b).
+  Proof. reflexivity. Qed.
+  Lemma me_fn_plus : forall a b, me_fn (a + b) = fun d => me_fn a d + me_fn b d.
+  Proof. reflexivity. Qed.
+  Lemma me_fn_zero : me_fn (0 : MonotoneEndo) = fun _ => zero.
+  Proof. reflexivity. Qed.
+
+  Global Instance ME_AlternatingKleeneAlgebra :
+      AlternatingKleeneAlgebra (Mo := ME_MonoidOps) (SLo := ME_SemiLatticeOps)
+                               (So := ME_StarOp) (Lo := ME_LeqOp) (Do := ME_DualOp).
+  Proof.
+    refine {| AKA_LHKA := ME_LeftHandedKleneeAlgebra |}.
+    - intro x; apply me_eq.
+      rewrite 2 me_fn_dual; unfold endo_dual.
+      extensionality d; cbv beta.
+      now rewrite !domain_comp_involutive.
+    - intros x y; split; intro H.
+      + apply endo_leq_pointwise_into; intro d.
+        rewrite 2 me_fn_dual; unfold endo_dual; cbv beta.
+        apply domain_comp_antitone.
+        exact (endo_leq_pointwise_elim (me_fn x) (me_fn y) (!d) H).
+      + apply endo_leq_pointwise_into; intro d.
+        pose proof (endo_leq_pointwise_elim (me_fn (y ~)) (me_fn (x ~)) (!d) H) as He.
+        rewrite 2 me_fn_dual in He; unfold endo_dual in He; cbv beta in He.
+        rewrite !domain_comp_involutive in He.
+        apply domain_comp_antitone in He.
+        rewrite !domain_comp_involutive in He.
+        exact He.
+    - intros x y; apply me_eq.
+      rewrite me_fn_dual, !me_fn_dot, !me_fn_dual.
+      unfold endo_dual, compose.
+      extensionality d; cbv beta.
+      now rewrite domain_comp_involutive.
+    - intro x; apply me_eq.
+      rewrite me_fn_plus, !me_fn_dot, !me_fn_dual, me_fn_zero.
+      unfold endo_dual, compose.
+      extensionality d; cbv beta.
+      now rewrite domain_plus_com, domain_comp_excluded_middle, domain_comp_zero.
+  Qed.
+
   Definition Continuous (a : Endo) : Prop :=
     forall (X : Ensemble Domain), a (domain_lub X) = domain_lub (Im _ _ X a).
 
