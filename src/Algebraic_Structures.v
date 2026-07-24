@@ -24,12 +24,17 @@ Section Ops.
         comp : A -> A;
     }.
 
+    Class Dual_Op (A : Type) := {
+        dual : A -> A;
+    }.
+
 End Ops.
 
 Notation "x <== y" := (leq x y) (at level 70). 
 Notation "x * y" := (dot x y) (at level 40, left associativity). 
 Notation "x + y" := (plus x y) (at level 50, left associativity). 
 Notation "x #"   := (star x) (at level 15, left associativity).
+Notation "x ~"   := (dual x) (at level 15, left associativity).
 Notation "! x" := (comp x) (at level 35, right associativity).
 Notation "1" := one.
 Notation "0" := zero.
@@ -85,6 +90,14 @@ Section Structures.
         star_make_left: forall x, 1 + x#*x = x#;
         star_destruct_right: forall a b, b*a <== b  ->  b*a# <== b
     }.    
+
+    Class AlternatingKleeneAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {So : Star_Op A} {Lo : Leq_Op A} {Do : Dual_Op A} := {
+        AKA_LHKA :: LeftHandedKleneeAlgebra;
+        dual_involutive : forall x, (x ~) ~ = x;
+        dual_antitone : forall x y, x <== y <-> (y ~) <== (x ~);
+        dual_dot : forall x y, (x * y) ~ = (x ~) * (y ~);
+        dual_zero_law : forall x, (x ~) * 0 + x * (0 ~) = 0 ~;
+    }.
 
     Class BooleanAlgebra {Mo : Monoid_Ops A} {SLo : SemiLattice_Ops A} {Co : Complement_Op A} {Lo : Leq_Op A} := {
         BA_Monoid :: Monoid;
